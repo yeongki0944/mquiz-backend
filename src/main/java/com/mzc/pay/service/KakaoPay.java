@@ -1,6 +1,6 @@
 package com.mzc.pay.service;
 import com.mzc.pay.model.KakaoPayApprovalVO;
-import com.mzc.pay.model.KakaoPayReadVo;
+import com.mzc.pay.model.KakaoPayReadyVo;
 import lombok.extern.java.Log;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -20,7 +20,7 @@ public class KakaoPay {
 
     private static final String HOST = "https://kapi.kakao.com";
 
-    private KakaoPayReadVo kakaoPayReadVo;
+    private KakaoPayReadyVo kakaoPayReadyVo;
     private KakaoPayApprovalVO kakaoPayApprovalVO;
 
     public String kakaoPayReady() {
@@ -49,11 +49,11 @@ public class KakaoPay {
         HttpEntity<MultiValueMap<String, String>> body = new HttpEntity<MultiValueMap<String, String>>(params, headers);
 
         try {
-            kakaoPayReadVo = restTemplate.postForObject(new URI(HOST + "/v1/payment/ready"), body, KakaoPayReadVo.class);
+            kakaoPayReadyVo = restTemplate.postForObject(new URI(HOST + "/v1/payment/ready"), body, KakaoPayReadyVo.class);
 
-            log.info("" + kakaoPayReadVo);
+            log.info("" + kakaoPayReadyVo);
 
-            return kakaoPayReadVo.getNext_redirect_pc_url();
+            return kakaoPayReadyVo.getNext_redirect_pc_url();
 
         } catch (RestClientException e) {
             // TODO Auto-generated catch block
@@ -83,7 +83,7 @@ public class KakaoPay {
         // 서버로 요청할 Body
         MultiValueMap<String, String> params = new LinkedMultiValueMap<String, String>();
         params.add("cid", "TC0ONETIME");
-        params.add("tid", kakaoPayReadVo.getTid());
+        params.add("tid", kakaoPayReadyVo.getTid());
         params.add("partner_order_id", "1001");
         params.add("partner_user_id", "gorany");
         params.add("pg_token", pg_token);

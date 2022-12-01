@@ -1,6 +1,6 @@
 package com.mzc.pay.service;
 import com.mzc.pay.model.KakaoPayApprovalVO;
-import com.mzc.pay.model.KakaoPayReadyVO;
+import com.mzc.pay.model.KakaoPayReadyVo;
 import lombok.extern.java.Log;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -20,7 +20,7 @@ public class KakaoPayService {
 
     private static final String HOST = "https://kapi.kakao.com";
 
-    private KakaoPayReadyVO kakaoPayReadyVO;
+    private KakaoPayReadyVo kakaoPayReadyVO;
     private KakaoPayApprovalVO kakaoPayApprovalVO;
 
     public String kakaoPayReady() {
@@ -35,7 +35,7 @@ public class KakaoPayService {
 
         // 서버로 요청할 Body
         MultiValueMap<String, String> params = new LinkedMultiValueMap<String, String>();
-        params.add("cid", "TC0ONETIME");
+        params.add("cid", "TC0ONETIME"); // 테스트용 cid
         params.add("partner_order_id", "1001");
         params.add("partner_user_id", "gorany");
         params.add("item_name", "갤럭시S9");
@@ -49,7 +49,7 @@ public class KakaoPayService {
         HttpEntity<MultiValueMap<String, String>> body = new HttpEntity<MultiValueMap<String, String>>(params, headers);
 
         try {
-            kakaoPayReadyVO = restTemplate.postForObject(new URI(HOST + "/v1/payment/ready"), body, KakaoPayReadyVO.class);
+            kakaoPayReadyVO = restTemplate.postForObject(new URI(HOST + "/v1/payment/ready"), body, KakaoPayReadyVo.class);
 
             log.info("" + kakaoPayReadyVO);
 
@@ -66,8 +66,6 @@ public class KakaoPayService {
         return "/pay";
 
     }
-
-
 
     public KakaoPayApprovalVO kakaoPayInfo(String pg_token) {
 
