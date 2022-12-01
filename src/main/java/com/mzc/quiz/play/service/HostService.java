@@ -34,7 +34,6 @@ public class HostService {
         }
     }
 
-
     public String makePIN(){
         String pin;
         while(true){
@@ -52,15 +51,6 @@ public class HostService {
                 break;
             }
         }
-
         return pin;
-
-
     }
-
-
-
-
-
-
 }
