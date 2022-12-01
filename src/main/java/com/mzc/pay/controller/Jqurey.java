@@ -1,6 +1,6 @@
 package com.mzc.pay.controller;
 
-import com.mzc.pay.model.VueDao;
+//import com.mzc.pay.model.VueDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,7 +17,7 @@ import java.net.URL;
 public class Jqurey {
 
     @Autowired
-    VueDao vdao;
+//    VueDao vdao;
 
     @RequestMapping("jq.cls")
     public ModelAndView main(ModelAndView mv, HttpSession s, RedirectView rv){
