@@ -30,18 +30,18 @@ public class Test_WS_RedisService {
        log.info("message : "+quizMessage);
     }
 
-    public void RedisTest(int pin, QuizMessage quizMessage){
-        ValueOperations<String, String> vop = redisTemplate.opsForValue();
-        String key = "pin:"+pin;
-        String value = quizMessage.getSender();
-        vop.set(key, value);
-        log.info("quiz message : "+quizMessage.getContent());
-        log.info("Redis get " + vop.get(key));
-    }
+//    public void RedisTest(int pin, QuizMessage quizMessage){
+//        ValueOperations<String, String> vop = redisTemplate.opsForValue();
+//        String key = "pin:"+pin;
+//        String value = quizMessage.getNickName();
+//        vop.set(key, value);
+//        log.info("quiz message : "+quizMessage.getContent());
+//        log.info("Redis get " + vop.get(key));
+//    }
 
     public void RedisUtilTest(int pin, QuizMessage quizMessage){
         String key = "UserList:"+pin;
-        String value = quizMessage.getSender();
+        String value = quizMessage.getNickName();
         redisUtil.SET(key, value);
 
         log.info("Redis get :" + redisUtil.getData(key));

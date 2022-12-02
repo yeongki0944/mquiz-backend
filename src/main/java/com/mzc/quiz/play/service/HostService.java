@@ -3,13 +3,19 @@ package com.mzc.quiz.play.service;
 import com.mzc.global.Response.DefaultRes;
 import com.mzc.global.Response.ResponseMessages;
 import com.mzc.global.Response.StatusCode;
+import com.mzc.quiz.play.model.QuizCommandType;
+import com.mzc.quiz.play.model.QuizMessage;
+import com.mzc.quiz.play.repository.QplayRepository;
 import com.mzc.quiz.play.util.RedisUtil;
+import com.mzc.quiz.show.entity.Show;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.Base64;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -20,37 +26,93 @@ public class HostService {
     RedisUtil redisUtil;
 
     @Autowired
+    QplayRepository qplayRepository;
+
+    @Autowired
     private SimpMessagingTemplate simpMessagingTemplate;
 
-    public DefaultRes createPlay(){
+    public void quizStart(QuizMessage quizMessage){
+        quizMessage.setCommand(QuizCommandType.START);
+        simpMessagingTemplate.convertAndSend("/pin/"+quizMessage.getPinNum(), quizMessage);
+    }
+
+    public void quizResult(QuizMessage quizMessage){
+        simpMessagingTemplate.convertAndSend("/pin/"+quizMessage.getPinNum(), quizMessage);
+    }
+
+
+    public void quizSkip(QuizMessage quizMessage){
+        simpMessagingTemplate.convertAndSend("/pin/"+quizMessage.getPinNum(), quizMessage);
+    }
+
+    public void quizFinal(QuizMessage quizMessage){
+        simpMessagingTemplate.convertAndSend("/pin/"+quizMessage.getPinNum(), quizMessage);
+    }
+
+    public void userBan(QuizMessage quizMessage){
+        simpMessagingTemplate.convertAndSend("/queue/"); // convertAndSend(전체 정보 방법) -> destination(보낼 경로), Object payload(보낼 정보)
+//        simpMessagingTemplate.convertAndSendToUser(); 요청한 곳에만 정보 전달 방법
+    }
+
+
+    public String[] getUserList(String pinNum){
+        Set<String> userList = redisUtil.SMEMBERS("PLAY:"+pinNum);
+        String[] test = new String[31];
+        userList.toArray(test);
+        test[0] = "0";
+        return test;
+    }
+
+    // 퀴즈 핀
+    public DefaultRes createPlay(String quizId){
         try{
-            String pin = makePIN();
+
+            String pin = makePIN(quizId);
+            System.out.println("createPlay : " + pin);
             // mongoDB 조회 -> 총 몇개인지 확인하고
             // 문제별 방도 생성을 해야 되나?
             return DefaultRes.res(StatusCode.OK, ResponseMessages.SUCCESS, pin);
         }catch (Exception e){
-            log.error(e.getMessage());
             return DefaultRes.res(StatusCode.BAD_REQUEST, ResponseMessages.BAD_REQUEST);
         }
     }
 
-    public String makePIN(){
+
+    public String makePIN(String quizId){
         String pin;
+
         while(true){
             pin = RandomStringUtils.randomNumeric(6);
             String playKey = redisUtil.genKey(pin);
 
-            log.info("Pin : "+pin);
             if( redisUtil.hasKey(playKey) ){
                 // 다시 생성
-                log.info("PIN 번호 생성 중 중복 발생");
             }else{
-                log.info("PIN 생성 완료");
-                redisUtil.SADD(playKey, playKey);
+                Show show = qplayRepository.findShowById(quizId);
+
+                String base64QuizData = Base64.getEncoder().encodeToString(show.getQuizData().toString().getBytes());
+
+                System.out.println(show);
+
+                if(show != null){
+                    redisUtil.SADD("META:"+pin, base64QuizData);
+                }
+                else{
+                    return "퀴즈데이터가 정상적으로 저장되지 않았습니다.";
+                }
+
+                redisUtil.SADD(playKey, quizId);
                 redisUtil.expire(playKey, 12, TimeUnit.HOURS);  // 하루만 유지??
                 break;
             }
         }
         return pin;
+    }
+
+    public boolean NullCheck(QuizMessage quizMessage){
+//        if(quizMessage == null || quizMessage.getContent() == null){
+//            return true;
+//        }
+        return false;
     }
 }
